@@ -9,6 +9,7 @@ import numpy as np
 import joblib
 import os
 import matplotlib.pyplot as plt
+import base64
 
 # ===== ตั้งค่าหน้าเว็บ =====
 st.set_page_config(
@@ -17,6 +18,16 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# ============================================================
+# ⭐ ข้อมูลผู้พัฒนา (แก้ไขข้อมูลตรงนี้ได้ตามต้องการ)
+# ============================================================
+DEVELOPER_NAME = "นายภาณุพงศ์ ภุ่มพันธ์วงค์"
+DEVELOPER_ID   = "664245030"
+DEVELOPER_CLASS = "หมู่เรียน 66/43"
+DEVELOPER_FACULTY = "คณะวิทยาศาสตร์และเทคโนโลยี"
+DEVELOPER_UNIVERSITY = "มหาวิทยาลัยราชภัฏนครปฐม"
+DEVELOPER_IMAGE = "img/030.jpg.jpg"  # วางไฟล์รูปในโฟลเดอร์ img/ ชื่อไฟล์ 030.jpg.jpg
 
 # ===== Custom CSS สำหรับความสวยงาม =====
 st.markdown("""
@@ -98,9 +109,156 @@ st.markdown("""
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
     }
+
+    /* ⭐ Developer Section CSS */
+    .dev-section-title {
+        text-align: center;
+        color: #2c3e50;
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 3rem 0 1.5rem 0;
+    }
+    
+    .dev-card-container {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-radius: 25px;
+        padding: 2.5rem;
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.15);
+        margin: 1rem auto;
+        max-width: 900px;
+        display: flex;
+        align-items: center;
+        gap: 2.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .dev-card-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.25);
+    }
+    
+    .dev-image-wrapper {
+        flex-shrink: 0;
+        position: relative;
+    }
+    
+    .dev-image-wrapper img {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid #667eea;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .dev-image-wrapper::after {
+        content: "🍷";
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        font-size: 2.5rem;
+        background: white;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .dev-info {
+        flex: 1;
+    }
+    
+    .dev-name {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 0 0 0.8rem 0;
+        border-bottom: 3px solid #667eea;
+        padding-bottom: 0.5rem;
+        display: inline-block;
+    }
+    
+    .dev-detail {
+        font-size: 1.05rem;
+        color: #4a5568;
+        margin: 0.6rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .dev-detail-icon {
+        font-size: 1.3rem;
+        min-width: 30px;
+        text-align: center;
+    }
+    
+    .dev-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        font-weight: bold;
+        margin-top: 1rem;
+        font-size: 0.95rem;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Responsive สำหรับมือถือ */
+    @media (max-width: 768px) {
+        .dev-card-container {
+            flex-direction: column;
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .dev-image-wrapper img {
+            width: 150px;
+            height: 150px;
+        }
+        
+        .dev-name {
+            font-size: 1.5rem;
+            text-align: center;
+            display: block;
+        }
+        
+        .dev-detail {
+            justify-content: center;
+        }
+    }
+    
+    .dev-emoji-fallback {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 5rem;
+        border: 5px solid white;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
 </style>
 """, unsafe_allow_html=True)
 
+# ===== ฟังก์ชันโหลดรูป =====
+def get_developer_image_base64():
+    """โหลดรูปผู้พัฒนา แปลงเป็น base64"""
+    try:
+        if os.path.exists(DEVELOPER_IMAGE):
+            with open(DEVELOPER_IMAGE, "rb") as f:
+                image_bytes = f.read()
+            return base64.b64encode(image_bytes).decode()
+    except Exception:
+        pass
+    return None
 
 # ===== โหลดโมเดล =====
 @st.cache_resource
@@ -114,7 +272,6 @@ def load_model():
     except FileNotFoundError:
         st.error("❌ ไม่พบไฟล์โมเดล กรุณาวางโฟลเดอร์ 'model_files' ในไดเรกทอรีเดียวกัน")
         st.stop()
-
 
 model, scaler, features = load_model()
 
@@ -145,7 +302,6 @@ with st.sidebar:
     st.markdown("- scikit-learn")
     st.markdown("- Streamlit")
 
-
 # ===== Header =====
 st.markdown("""
 <div class="main-header">
@@ -154,24 +310,19 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-
 # ===== Input Form =====
 col1, col2 = st.columns([2, 1])
 
 with col1:
     st.markdown("### 🔬 ป้อนข้อมูลคุณสมบัติทางเคมี")
     
-    # สร้าง input fields สำหรับแต่ละ feature
     input_data = {}
-    
-    # แบ่ง features เป็น 2 คอลัมน์
     half = len(features) // 2 + 1
     left_features = features[:half]
     right_features = features[half:]
     
     col_left, col_right = st.columns(2)
     
-    # ค่าขอบเขตสำหรับแต่ละ feature (จากข้อมูล Wine)
     feature_ranges = {
         'alcohol': (10.0, 15.0, 12.5),
         'malic_acid': (0.5, 5.0, 2.5),
@@ -210,37 +361,28 @@ with col1:
                 step=0.1
             )
     
-    # ปุ่มทำนาย
     st.markdown("<br>", unsafe_allow_html=True)
     predict_button = st.button("🔮 ทำนายผล", use_container_width=True)
 
-
 with col2:
     st.markdown("### 📋 ข้อมูลที่ป้อน")
-    
-    # แสดงข้อมูลที่ป้อนในรูปแบบ DataFrame
     input_df = pd.DataFrame([input_data])
     st.dataframe(input_df.T.rename(columns={0: 'ค่า'}), use_container_width=True)
     
-    # ปุ่ม Reset
     if st.button("🔄 รีเซ็ตค่า", use_container_width=True):
         st.rerun()
-
 
 # ===== Prediction =====
 if predict_button:
     with st.spinner("🤖 กำลังวิเคราะห์ข้อมูล..."):
-        # Transform ข้อมูลด้วย scaler เดียวกันกับตอนฝึก
         input_array = np.array([list(input_data.values())])
         input_scaled = scaler.transform(input_array)
         
-        # ทำนาย
         prediction = model.predict(input_scaled)[0]
         probabilities = model.predict_proba(input_scaled)[0]
         
         st.markdown("---")
         
-        # แสดงผลการทำนาย
         st.markdown(f"""
         <div class="prediction-box">
             <h2>{WINE_NAMES[prediction]}</h2>
@@ -250,7 +392,6 @@ if predict_button:
         </div>
         """, unsafe_allow_html=True)
         
-        # แสดงความน่าจะเป็นของแต่ละคลาส
         st.markdown("### 📊 ความน่าจะเป็นของแต่ละคลาส")
         
         prob_df = pd.DataFrame({
@@ -264,7 +405,6 @@ if predict_button:
             st.dataframe(prob_df, use_container_width=True, hide_index=True)
         
         with col_b:
-            # Bar chart แสดงความน่าจะเป็น
             chart_df = pd.DataFrame(
                 probabilities * 100,
                 index=['Class 0', 'Class 1', 'Class 2'],
@@ -272,7 +412,6 @@ if predict_button:
             )
             st.bar_chart(chart_df, color='#667eea')
         
-        # Feature Importance
         st.markdown("---")
         st.markdown("### 🎯 Feature Importance")
         
@@ -281,7 +420,6 @@ if predict_button:
             'Importance': model.feature_importances_
         }).sort_values('Importance', ascending=True)
         
-        # กรองเฉพาะ features ที่มี importance > 0
         importance_df = importance_df[importance_df['Importance'] > 0]
         
         if len(importance_df) > 0:
@@ -292,13 +430,54 @@ if predict_button:
             ax.set_title('Feature Importance จากโมเดล Decision Tree')
             st.pyplot(fig)
         else:
-            st.info("โมเดลไม่ได้ใช้ features ใดๆ ในการตัดสินใจ")
+           st.info("โมเดลไม่ได้ใช้ features ใดๆ ในการตัดสินใจ")
 
+# ============================================================
+# ⭐ Developer Section - จัดวางรูป ชื่อ หมู่เรียน ใหม่
+# ============================================================
+st.markdown("---")
+st.markdown('<div class="dev-section-title">👨‍💻 ผู้พัฒนา / Developer</div>', unsafe_allow_html=True)
+
+img_base64 = get_developer_image_base64()
+if img_base64:
+    image_html = f'<img src="data:image/jpeg;base64,{img_base64}" alt="Developer Photo">'
+else:
+    image_html = '<div class="dev-emoji-fallback">👨‍💻</div>'
+
+st.markdown(f"""
+<div class="dev-card-container">
+    <div class="dev-image-wrapper">
+        {image_html}
+    </div>
+    <div class="dev-info">
+        <h2 class="dev-name">👨‍💻 {DEVELOPER_NAME}</h2>
+        <div class="dev-detail">
+            <span class="dev-detail-icon">🆔</span>
+            <span><b>รหัสนักศึกษา:</b> {DEVELOPER_ID}</span>
+        </div>
+        <div class="dev-detail">
+            <span class="dev-detail-icon">🎓</span>
+            <span><b>หมู่เรียน:</b> {DEVELOPER_CLASS}</span>
+        </div>
+        <div class="dev-detail">
+            <span class="dev-detail-icon">🏛️</span>
+            <span><b>คณะ:</b> {DEVELOPER_FACULTY}</span>
+        </div>
+        <div class="dev-detail">
+            <span class="dev-detail-icon">🏫</span>
+            <span><b>มหาวิทยาลัย:</b> {DEVELOPER_UNIVERSITY}</span>
+        </div>
+        <span class="dev-badge">✨ Data Science Developer</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 # ===== Footer =====
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #666; padding: 1rem;'>
-    <p>🎓 พัฒนาเพื่อการศึกษา | Decision Tree Classifier with Streamlit</p>
+    <p>🎓 พัฒนาเพื่อการศึกษา | Decision Tree Classifier with Streamlit | 📅 2026</p>
 </div>
 """, unsafe_allow_html=True)
